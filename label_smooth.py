@@ -9,7 +9,7 @@ class LabelSmooth1(torch.nn.Module):
         n = preds.size()[-1]
         log_preds = torch.nn.functional.log_softmax(preds, dim=-1)
         loss = -log_preds.sum(dim=-1)
-        nll = torch.nn.functional.nll_loss(log_preds, target, reduction='none')
+        nll = torch.nn.functional.nll_loss(log_preds, target, reduction=self.reduction)
         return (self.epsilon* loss / n + (1-self.epsilon) * nll)
 
 class LabelSmooth2(torch.nn.Module):
@@ -21,8 +21,8 @@ class LabelSmooth2(torch.nn.Module):
         n_class = preds.size(-1)
         one_hot = torch.zeros_like(preds).scatter(1, target.view(-1, 1), 1)
         one_hot = one_hot * (1 - self.epsilon) + (1 - one_hot) * self.epsilon / (n_class - 1)
-        log_prb = torch.nn.functional.log_softmax(preds, dim=1)
-        loss = -(one_hot * log_prb).sum(dim=1)
+        log_prb = torch.nn.functional.log_softmax(preds, dim=-1)
+        loss = -(one_hot * log_prb).sum(dim=-1)
         return loss
 
 if __name__ == '__main__':
